@@ -6,9 +6,51 @@
     define("FILE_MODE_WRITE_APPEND", "a");
     define("FILE_MODE_READWRITE_APPEND", "a+");
 
+    class TVRecord
+    {
+        public $id;
+        public $type;
+        public $brand;
+        public $model;
+        public $price;
+        public $sale_price;
+        public $description;
+
+        public function __construct(
+            $id,
+            $type,
+            $brand,
+            $model,
+            $price,
+            $sale_price,
+            $description
+        )
+        {
+            $this -> id = $id;
+            $this -> type = $type;
+            $this -> brand = $brand;
+            $this -> model = $model;
+            $this -> price = $price;
+            $this -> sale_price = $sale_price;
+            $this -> description = $description;
+        }
+
+        public function equals(TVRecord $other): bool
+        {
+            return $this -> id == $other -> id;
+        }
+
+        public static function filter_records(
+            //TODO: Maybe this? Get clarification
+        )
+        {
+
+        }
+    }
+
     //Context manager for files. Pass in a callable to have it executed assuming the given file
     //NOTE: callable MUST accept the file handle as an argument
-    function open_file_context_manager($file, $mode, $callable)
+    function open_file_context_manager($file, string $mode, callable $callable)
     {
         //Open file
         $file = fopen($file, $mode);
@@ -39,6 +81,7 @@
                 return true;
             }
         );
+
         // Return the filtered values
         return $data;
     }

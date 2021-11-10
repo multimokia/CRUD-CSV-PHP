@@ -42,7 +42,7 @@
                 <input type="number" name="price" id="price"/>
                 <br><br>
                 <label for="saleprice">Sale price:</label>
-                <input type="number" name="saleprice" id="saleprice"/>
+                <input type="text" name="saleprice" id="saleprice" pattern="^\d+(\.\d+)?$"/>
                 <br><br>
                 <label for="description">Description:</label>
                 <textarea name="description" id="description" placeholder="Enter a description about this product"></textarea>
