@@ -11,35 +11,35 @@
         table, tr, td {
             border: 1px solid black;
         }
+
+        .red {
+            color: red;
+        }
+
     </style>
     <?php include "./functions.inc.php"; ?>
 </head>
     <body>
-    <?php
-        //Log errors to file
-        ini_set('log_errors', 1);
-        ini_set('error_log', "./error.log");
-    ?>
         <form method="POST">
             <fieldset>
                 <legend>What do?</legend>
                 <label for="tv_type">TV Type:</label>
-                <?php select("tv_type", ["--", "LCD", "LED", "OLED", "QLED"]); ?>
+                <?php select("tv_type", ["--", "LCD", "LED", "OLED", "QLED"], null, true); ?>
                 <br><br>
                 <h3>Brand:</h3>
-                <input type="radio" name="brand" id="brandLG" value="LG"><label for="brandLG">LG</label>
+                <input type="radio" name="brand" id="brandLG" value="LG" required><label for="brandLG">LG</label>
                 <input type="radio" name="brand" id="brandSamsung" value="Samsung"><label for="brandSamsung">Samsung</label>
                 <input type="radio" name="brand" id="brandSony" value="Sony"><label for="brandSony">Sony</label>
                 <input type="radio" name="brand" id="brandToshiba" value="Toshiba"><label for="brandToshiba">Toshiba</label>
                 <br><br>
                 <label for="model">Model:</label>
-                <input type="text" name="model" id="model"/>
+                <input type="text" name="model" id="model" required/>
                 <br><br>
                 <label for="size">Size:</label>
-                <input type="number" name="size" id="size"/>
+                <input type="number" name="size" id="size" required/>
                 <br><br>
                 <label for="price">Price:</label>
-                <input type="number" name="price" id="price"/>
+                <input type="number" name="price" id="price" required/>
                 <br><br>
                 <label for="saleprice">Sale price:</label>
                 <input type="text" name="saleprice" id="saleprice" pattern="^\d+(\.\d+)?$"/>
@@ -47,9 +47,26 @@
                 <label for="description">Description:</label>
                 <textarea name="description" id="description" placeholder="Enter a description about this product"></textarea>
 
-                <input type="submit" value="Search"/>
+                <input type="submit" value="Submit"/>
             </fieldset>
         </form>
+        <hr>
+        <table>
+            <tr>
+                <td>Id</td>
+                <td>Type</td>
+                <td>Brand</td>
+                <td>Model</td>
+                <td>Size</td>
+                <td>Price</td>
+                <td>Description</td>
+            </tr>
+            <?php
+                foreach ($records as $tr)
+                    { echo $tr -> __toString(); }
+            ?>
+        </table>
+        <hr>
         <script src=https://my.gblearn.com/js/loadscript.js></script>
         <hr>
         <?php show_source(__file__)?>
