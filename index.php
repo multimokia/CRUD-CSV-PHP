@@ -16,6 +16,11 @@
             color: red;
         }
 
+        .error {
+            color: red;
+            font-weight: bold;
+            border: 2px dotted red;
+        }
     </style>
     <?php include "./functions.inc.php"; ?>
 </head>
@@ -39,7 +44,7 @@
                 <input type="number" name="size" id="size" required/>
                 <br><br>
                 <label for="price">Price:</label>
-                <input type="number" name="price" id="price" required/>
+                <input type="text" name="price" id="price" pattern="^\d+(\.\d+)?$" required/>
                 <br><br>
                 <label for="saleprice">Sale price:</label>
                 <input type="text" name="saleprice" id="saleprice" pattern="^\d+(\.\d+)?$"/>

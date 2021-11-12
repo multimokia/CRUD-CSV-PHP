@@ -62,6 +62,8 @@
             $this -> price = floatval($price);
             $this -> sale_price = $sale_price ? floatval($sale_price) : null;
             $this -> description = $description;
+
+            $records[$this -> id] = $this;
         }
 
         public function equals(TVRecord $other): bool
@@ -162,12 +164,10 @@
     )
     {
         //First check if the record already exists
-        if (find_single_record($id))
-            { throw new ErrorException("Device with that specification already exists in records."); }
-
         open_file_context_manager(
             "data/tvs.csv", FILE_MODE_READWRITE_APPEND,
             function($file) use ($id, $type, $brand, $model, $size, $base_price, $sale_price, $description) {
+                echo "<h1>Brand: $brand</h1>";
                 fputcsv($file, [$id, $type, $brand, $model, $size, $base_price, $sale_price, "\"$description\""]);
             }
         );
@@ -189,10 +189,7 @@
                 {
                     while($entries = fgetcsv($file, 1024))
                     {
-                        array_push(
-                            $data,
-                            new TVRecord(...$entries)
-                        );
+                        $data[$entries[0]] = new TVRecord(...$entries);
                     }
                 }
                 return $data;
@@ -203,14 +200,63 @@
     //Finds a record by id. Returns the record if found or null if not.
     function find_single_record($id)
     {
-        $records = get_all_records();
+        global $records;
+        return $records[$id] ?? null;
+    }
 
-        foreach ($records as $record)
-        {
-            if ($record -> id == $id)
-                { return $record; }
-        }
+    ##CRUD HANDLERS
+    function create_record()
+    {
+        //Get the form data and validate
 
-        return null;
+        $type = $_POST["tv_type"]; //From dropdown, no need to validate
+        $brand = $_POST["brand"]; //From radio buttons, no need to validate
+        $model = filter_input(INPUT_POST, "model", FILTER_SANITIZE_STRING);
+        $size = filter_input(INPUT_POST, "size", FILTER_SANITIZE_NUMBER_INT);
+        $base_price = $_POST["price"]; //These are validated by the regex pattern
+        $sale_price = $_POST["saleprice"]; //Same as above
+        $description = filter_input(INPUT_POST, "description", FILTER_SANITIZE_STRING);
+
+        //echo the data for debug purposes
+        echo "<p>Type: $type</p>";
+        echo "<p>Brand: $brand</p>";
+        echo "<p>Model: $model</p>";
+        echo "<p>Size: $size</p>";
+        echo "<p>Base price: $base_price</p>";
+        echo "<p>Sale price: $sale_price</p>";
+        echo "<p>Description: $description</p>";
+
+        $id = TVRecord::serialize($type, $brand, $model, $size);
+        echo "<p>Generated id: $id</p>";
+
+
+        //Create the record
+        //NOTE: The initialization of a TVRecord will automatically handle putting it in the records array
+        create(
+            $id,
+            $type,
+            $brand,
+            $model,
+            $size,
+            $base_price,
+            $sale_price,
+            $description
+        );
+
+        //Redirect to the index page
+        header("Location: index.php");
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST')
+    {
+        try
+            { create_record(); echo $records; }
+
+        catch (ErrorException $e)
+            { echo "<span class='error'><p>{$e -> getMessage()}</p></span>"; }
+
+        //General catchall
+        catch (Exception $e)
+            { echo "<p class='error'>{$e -> getMessage()}</p>"; }
     }
 ?>
