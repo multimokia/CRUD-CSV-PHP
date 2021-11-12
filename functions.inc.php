@@ -4,21 +4,46 @@
     ini_set('error_log', "./error.log");
 ?>
 <?php
-    define("FILE_MODE_READ", "r"); //NOTE: DIES NOT CREATE A FILE IF IT DOESN'T EXIST
-    define("FILE_MODE_READWRITE", "r+"); //NOTE: DIES NOT CREATE A FILE IF IT DOESN'T EXIST
+    define("FILE_MODE_READ", "r"); //NOTE: DOES NOT CREATE A FILE IF IT DOESN'T EXIST
+    define("FILE_MODE_READWRITE", "r+"); //NOTE: DOES NOT CREATE A FILE IF IT DOESN'T EXIST
     define("FILE_MODE_WRITE", "w");
     define("FILE_MODE_READWRITE_TRUNCATE", "w+");
     define("FILE_MODE_WRITE_APPEND", "a");
     define("FILE_MODE_READWRITE_APPEND", "a+");
 
-    // id : TVRecord
+    //id : TVRecord
+    //This is essentially a runtime map of TVRecord objects.
     $records = array();
 
     //Load all records from persistent
     $records = get_all_records();
 
+    //Create a session
+    session_start();
+
+    //Function that generates a warning we can display to the user
+    function generate_warning($message) {
+        echo "<div class='warning'>$message</div>";
+    }
+
+    //Function that generates an error we can display to the user
+    function generate_error($message) {
+        echo "<div class='error'>$message</div>";
+    }
+
+    //Function that generates a success message we can display to the user
+    function generate_success($message) {
+        echo "<div class='success'>$message</div>";
+    }
+
+    //Internal function to convert a string to an ascii numeric value
+    //(sum of all of the ascii values of each character)
     function ascii_add($str)
     {
+        //Trim excess whitespace
+        $str = trim($str);
+
+        //Calculate the sum of all the ascii values of each character
         $rv = 0;
         foreach (str_split($str) as $chr)
             { $rv += ord($chr); }
@@ -50,11 +75,11 @@
         {
             global $records;
 
-            //Reject if in array
+            //If we have a record of this already, we should raise an error
             if (in_array($id, array_keys($records)))
-                { throw new ErrorException("Device with that specification already exists in records."); }
+                { throw new ErrorException("A TV with that specification already exists in the records."); }
 
-            $this -> id = TVRecord::serialize($type, $brand, $model, $size);
+            $this -> id = $id; //TVRecord::serialize($type, $brand, $model, $size);
             $this -> type = $type;
             $this -> brand = $brand;
             $this -> model = $model;
@@ -62,8 +87,6 @@
             $this -> price = floatval($price);
             $this -> sale_price = $sale_price ? floatval($sale_price) : null;
             $this -> description = $description;
-
-            $records[$this -> id] = $this;
         }
 
         public function equals(TVRecord $other): bool
@@ -73,7 +96,7 @@
 
         public function __toString()
         {
-            $rv = "<tr><td>{$this -> id}</td>";
+            $rv = "<td><a href=info.php?id={$this -> id}>{$this->id}</a></td>";
             $rv .= "<td>{$this -> type}</td>";
             $rv .= "<td>{$this -> brand}</td>";
             $rv .= "<td>{$this -> model}</td>";
@@ -90,7 +113,7 @@
                 $rv .= "<td>\$$pricestr</td>";
             }
 
-            $rv .= "<td>{$this -> description}</td></tr>";
+            $rv .= "<td>{$this -> description}</td>";
 
             return $rv;
         }
@@ -115,7 +138,7 @@
     function open_file_context_manager($file, string $mode, callable $callable)
     {
         //Open file
-        $file = fopen($file, $mode) or die("Cannae read file!");
+        $file = fopen($file, $mode) or die("Couldn't open file.");
 
         //Execute func
         $result = $callable($file);
@@ -152,23 +175,27 @@
         echo $rv;
     }
 
-    function create(
-        $id,
-        $type,
-        $brand,
-        $model,
-        $size,
-        $base_price,
-        $sale_price,
-        $description
-    )
+    //Internal function to add a record
+    //NOTE: DOES NO VALIDATION TO CHECK IF RECORD ALREADY EXISTS
+    function _create(TVRecord $record)
     {
         //First check if the record already exists
         open_file_context_manager(
-            "data/tvs.csv", FILE_MODE_READWRITE_APPEND,
-            function($file) use ($id, $type, $brand, $model, $size, $base_price, $sale_price, $description) {
-                echo "<h1>Brand: $brand</h1>";
-                fputcsv($file, [$id, $type, $brand, $model, $size, $base_price, $sale_price, "\"$description\""]);
+            "data/tvs.csv", FILE_MODE_WRITE_APPEND,
+            function($file) use ($record) {
+                fputcsv(
+                    $file,
+                    [
+                        $record->id,
+                        $record->type,
+                        $record->brand,
+                        $record->model,
+                        $record->size,
+                        $record->price,
+                        $record->sale_price,
+                        $record->description
+                    ]
+                );
             }
         );
     }
@@ -209,7 +236,16 @@
     {
         //Get the form data and validate
 
-        $type = $_POST["tv_type"]; //From dropdown, no need to validate
+        $type = $_POST["tv_type"]; //From dropdown, no need to validate the string
+
+        //However we should make sure the default hasn't been submitted
+        if ($type === "--")
+        {
+            generate_error("Please select a TV type.");
+            return;
+        }
+
+        echo "($type)";
         $brand = $_POST["brand"]; //From radio buttons, no need to validate
         $model = filter_input(INPUT_POST, "model", FILTER_SANITIZE_STRING);
         $size = filter_input(INPUT_POST, "size", FILTER_SANITIZE_NUMBER_INT);
@@ -217,31 +253,31 @@
         $sale_price = $_POST["saleprice"]; //Same as above
         $description = filter_input(INPUT_POST, "description", FILTER_SANITIZE_STRING);
 
-        //echo the data for debug purposes
-        echo "<p>Type: $type</p>";
-        echo "<p>Brand: $brand</p>";
-        echo "<p>Model: $model</p>";
-        echo "<p>Size: $size</p>";
-        echo "<p>Base price: $base_price</p>";
-        echo "<p>Sale price: $sale_price</p>";
-        echo "<p>Description: $description</p>";
+        //Try to initialize a TVRecord. If we fail then we catch the error and report it
+        try
+        {
+            $record = new TVRecord(
+                TVRecord::serialize($type, $brand, $model, $size),
+                $type,
+                $brand,
+                $model,
+                $size,
+                $base_price,
+                $sale_price,
+                $description
+            );
+        }
 
-        $id = TVRecord::serialize($type, $brand, $model, $size);
-        echo "<p>Generated id: $id</p>";
+        catch (ErrorException $e)
+        {
+            generate_error($e -> getMessage());
+            return;
+        }
 
+        //Checks passed, create the record in the runtime map
+        _create($record);
 
-        //Create the record
-        //NOTE: The initialization of a TVRecord will automatically handle putting it in the records array
-        create(
-            $id,
-            $type,
-            $brand,
-            $model,
-            $size,
-            $base_price,
-            $sale_price,
-            $description
-        );
+        $_SESSION["success_message"] = ["success", "Record created successfully."];
 
         //Redirect to the index page
         header("Location: index.php");
@@ -250,13 +286,12 @@
     if ($_SERVER['REQUEST_METHOD'] == 'POST')
     {
         try
-            { create_record(); echo $records; }
-
-        catch (ErrorException $e)
-            { echo "<span class='error'><p>{$e -> getMessage()}</p></span>"; }
+        {
+            create_record();
+        }
 
         //General catchall
         catch (Exception $e)
-            { echo "<p class='error'>{$e -> getMessage()}</p>"; }
+            { generate_error($e -> getMessage()); }
     }
 ?>

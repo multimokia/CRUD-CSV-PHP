@@ -6,22 +6,7 @@
     <meta name="author" content="Michael D'mello">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assignment 3</title>
-    <style>
-        /* Give tables, trs, and tds solid 1px borders */
-        table, tr, td {
-            border: 1px solid black;
-        }
-
-        .red {
-            color: red;
-        }
-
-        .error {
-            color: red;
-            font-weight: bold;
-            border: 2px dotted red;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
     <?php include "./functions.inc.php"; ?>
 </head>
     <body>
@@ -58,19 +43,49 @@
         <hr>
         <table>
             <tr>
-                <td>Id</td>
-                <td>Type</td>
-                <td>Brand</td>
-                <td>Model</td>
-                <td>Size</td>
-                <td>Price</td>
-                <td>Description</td>
+                <th>#</th>
+                <th>Id</th>
+                <th>Type</th>
+                <th>Brand</th>
+                <th>Model</th>
+                <th>Size</th>
+                <th>Price</th>
+                <th>Description</th>
             </tr>
             <?php
-                foreach ($records as $tr)
-                    { echo $tr -> __toString(); }
+                //Loop over the values via for loop
+                for ($i = 0; $i < count($records); $i++) {
+                    echo "<tr>";
+                    echo "<td>".($i+1)."</td>";
+                    echo array_values($records)[$i] -> __toString();
+                    echo "</tr>";
+                }
             ?>
         </table>
+        <hr>
+        <?php
+            //Hadle all messages here
+            if (isset($_SESSION["message"]))
+            {
+                [$type, $message] = $_SESSION["message"];
+
+                switch ($type)
+                {
+                    case "success":
+                        generate_success($message);
+                        break;
+                    case "warning":
+                        generate_warning($message);
+                        break;
+                    case "error":
+                        generate_error($message);
+                        break;
+                }
+
+                echo $_SESSION["message"];
+                unset($_SESSION["message"]);
+            }
+        ?>
         <hr>
         <script src=https://my.gblearn.com/js/loadscript.js></script>
         <hr>

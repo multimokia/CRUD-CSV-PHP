@@ -1,0 +1,27 @@
+/* Give tables, trs, and tds solid 1px borders */
+table, tr, td, th {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+.red {
+    color: red;
+}
+
+.success {
+    color: green;
+    font-weight: bold;
+    border: 2px solid green;
+}
+
+.warning {
+    color: orange;
+    font-weight: bold;
+    border: 2px dotted orange;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    border: 2px dashed red;
+}
