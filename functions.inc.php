@@ -30,14 +30,14 @@
 
     class TVRecord
     {
-        public string $id;
-        public string $type;
-        public string $brand;
-        public string $model;
-        public int $size;
-        public float $price;
-        public ?float $sale_price;
-        public ?string $description;
+        public $id;
+        public $type;
+        public $brand;
+        public $model;
+        public $size;
+        public $price;
+        public $sale_price;
+        public $description;
 
         public function __construct(
             $id,
@@ -197,7 +197,7 @@
 
     //Internal function to add a record
     //NOTE: DOES NO VALIDATION TO CHECK IF RECORD ALREADY EXISTS
-    function _create(TVRecord $record)
+    function _create($record)
     {
         //First check if the record already exists
         open_file_context_manager(
