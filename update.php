@@ -18,7 +18,7 @@
                     if ($record)
                         { $record->dump_update_form(); }
                     else
-                        { generate_error("Record not found"); }
+                        { generate_error("Record not found ({$record->id})"); }
                 ?>
             </fieldset>
         </form>

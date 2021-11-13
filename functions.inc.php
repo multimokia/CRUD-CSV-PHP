@@ -333,7 +333,7 @@
         //If the record doesn't exist, throw an error
         if (!$record)
         {
-            generate_error("Record not found.");
+            generate_error("Record not found ({$record->id})");
             return;
         }
 
