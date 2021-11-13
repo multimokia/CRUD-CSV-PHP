@@ -118,6 +118,20 @@
             return $rv;
         }
 
+        public function to_array()
+        {
+            return array(
+                $this -> id,
+                $this -> type,
+                $this -> brand,
+                $this -> model,
+                $this -> size,
+                $this -> price,
+                $this -> sale_price,
+                $this -> description
+            );
+        }
+
         public static function serialize(string $type, string $brand, string $model, int $size): string
         {
             //Serialization approach:
@@ -138,7 +152,7 @@
     function open_file_context_manager($file, string $mode, callable $callable)
     {
         //Open file
-        $file = fopen($file, $mode) or die("Couldn't open file.");
+        $file = fopen($file, $mode) or die(error_get_last()["message"]);
 
         //Execute func
         $result = $callable($file);
@@ -231,7 +245,9 @@
         return $records[$id] ?? null;
     }
 
-    ##CRUD HANDLERS
+    //CRUD WRAPPER FUNCTIONS
+
+    //CREATE
     function create_record()
     {
         //Get the form data and validate
@@ -245,7 +261,6 @@
             return;
         }
 
-        echo "($type)";
         $brand = $_POST["brand"]; //From radio buttons, no need to validate
         $model = filter_input(INPUT_POST, "model", FILTER_SANITIZE_STRING);
         $size = filter_input(INPUT_POST, "size", FILTER_SANITIZE_NUMBER_INT);
@@ -283,12 +298,76 @@
         header("Location: index.php");
     }
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST')
+    if (isset($_POST["createsubmit"]))
     {
         try
+            { create_record(); }
+
+        //General catchall
+        catch (Exception $e)
+            { generate_error($e -> getMessage()); }
+    }
+
+    //DELETE
+    function delete_record($id)
+    {
+        global $records;
+
+        open_file_context_manager("debug/ihatelife.txt", FILE_MODE_WRITE_APPEND,
+            function($file) use ($id) {
+                fwrite($file, "Deleting record with id: $id\n");
+            }
+        );
+
+        //Get the record
+        $record = find_single_record($id);
+
+        //If the record doesn't exist, throw an error
+        if (!$record)
         {
-            create_record();
+            generate_error("Record not found.");
+            return;
         }
+
+        //Pop from the runtime map
+        unset($records[$record->id]);
+
+        //Delete the record
+        open_file_context_manager(
+            "data/tvs.csv", FILE_MODE_WRITE,
+            function($file) use ($records) {
+                //Add columns
+                fputcsv($file, ["Id","Type","Brand","Model","Size","Price","Sale","Desc"]);
+
+                //Repopulate the file
+                foreach ($records as $dataline)
+                    { fputcsv($file, $dataline->to_array()); }
+            }
+        );
+
+        //Delete the record from the runtime map
+        unset($records[$id]);
+
+        $_SESSION["success_message"] = ["success", "Record deleted successfully."];
+
+        //Redirect to the index page
+        header("Location: index.php");
+    }
+
+    //Confirm deletion function
+    //Echos javascript to confirm record deletion. If user confirms, send post info to delete the record
+    function add_delete_button($id)
+    {
+        echo "<form method='POST' onsubmit=\"return confirm('Are you sure you want to delete this record?');\">";
+        echo "<input type='hidden' name='deleteid' value='$id'/>";
+        echo "<input type='submit' name='deleterecord' value='Delete'>";
+        echo "</form>";
+    }
+
+    if (isset($_POST["deleterecord"]))
+    {
+        try
+            { delete_record($_POST["deleteid"]); }
 
         //General catchall
         catch (Exception $e)

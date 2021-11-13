@@ -37,7 +37,7 @@
                 <label for="description">Description:</label>
                 <textarea name="description" id="description" placeholder="Enter a description about this product"></textarea>
 
-                <input type="submit" value="Submit"/>
+                <input type="submit" name="createsubmit" value="Submit"/>
             </fieldset>
         </form>
         <hr>
@@ -51,6 +51,7 @@
                 <th>Size</th>
                 <th>Price</th>
                 <th>Description</th>
+                <th>Action</th>
             </tr>
             <?php
                 //Loop over the values via for loop
@@ -58,6 +59,9 @@
                     echo "<tr>";
                     echo "<td>".($i+1)."</td>";
                     echo array_values($records)[$i] -> __toString();
+                    echo "<td>";
+                    add_delete_button(array_values($records)[$i] -> id);
+                    echo "</td>";
                     echo "</tr>";
                 }
             ?>
