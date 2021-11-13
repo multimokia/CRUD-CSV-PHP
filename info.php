@@ -31,5 +31,9 @@
         $prevpage = $_SERVER["HTTP_REFERER"];
         echo "<a href=\"$prevpage\">Back</a>";
     ?>
+    <hr>
+    <script src=https://my.gblearn.com/js/loadscript.js></script>
+    <hr>
+    <?php show_source(__file__)?>
 </body>
 </html>

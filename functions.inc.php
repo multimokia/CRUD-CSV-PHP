@@ -28,21 +28,6 @@
         echo "<div class='error'>$message</div>";
     }
 
-    //Internal function to convert a string to an ascii numeric value
-    //(sum of all of the ascii values of each character)
-    function ascii_add($str)
-    {
-        //Trim excess whitespace
-        $str = trim($str);
-
-        //Calculate the sum of all the ascii values of each character
-        $rv = 0;
-        foreach (str_split($str) as $chr)
-            { $rv += ord($chr); }
-
-        return $rv;
-    }
-
     class TVRecord
     {
         public string $id;
@@ -65,12 +50,6 @@
             $description = null
         )
         {
-            global $records;
-
-            //If we have a record of this already, we should raise an error
-            if (in_array($id, array_keys($records)))
-                { throw new ErrorException("A TV with that specification already exists in the records."); }
-
             $this -> id = $id;
             $this -> type = $type;
             $this -> brand = $brand;
@@ -81,9 +60,40 @@
             $this -> description = $description;
         }
 
-        public function equals(TVRecord $other): bool
+        public function dump_update_form()
         {
-            return $this -> id == $other -> id;
+            echo "<legend>Editing TV: {$this->id}</legend>";
+            echo "<input type='hidden' name='id' value='{$this->id}'/>";
+            echo "<label for='type'>TV Type:</label>";
+            select("tv_type", ["LCD", "LED", "OLED", "QLED"], $this->type, true);
+            echo "<br><br>";
+            echo "<h3>Brand:</h3>";
+
+            $brands = ["LG", "Samsung", "Sony", "Toshiba"];
+
+            //Loop over the brands and create a radiobutton for each, selecting the current one
+            foreach ($brands as $brand)
+            {
+                $selected = $brand == $this->brand ? "checked" : "";
+                echo "<input type='radio' name='brand' id='brand$brand' value='$brand' required $selected/><label for='brand$brand'>$brand</label>";
+            }
+
+            echo "<br><br>";
+            echo "<label for='model'>Model:</label>";
+            echo "<input type='text' name='model' id='model' value='{$this->model}' required/>";
+            echo "<br><br>";
+            echo "<label for='size'>Size:</label>";
+            echo "<input type='number' name='size' id='size' value='{$this->size}' required/>";
+            echo "<br><br>";
+            echo "<label for='price'>Price:</label>";
+            echo "<input type='text' name='price' id='price' value='{$this->price}' pattern='^\d+(\.\d+)?$' required/>";
+            echo "<br><br>";
+            echo "<label for='saleprice'>Sale price:</label>";
+            echo "<input type='text' name='saleprice' id='saleprice' value='{$this->sale_price}' pattern='^\d+(\.\d+)?$'/>";
+            echo "<br><br>";
+            echo "<label for='description'>Description:</label>";
+            echo "<textarea name='description' id='description' placeholder='Enter a description about this product'>{$this->description}</textarea>";
+            echo "<br><br><input type='submit' name='updatesubmit' value='Submit'/>";
         }
 
         public function __toString()
@@ -133,7 +143,6 @@
             {
                 //Generate a unique id for this record
                 $hex_value = substr("0x" . dechex(rand(10000, 99999)), -5);
-                echo "Generated hex value: $hex_value<br>";
             } while (in_array($hex_value, array_keys($records)));
 
             //Return the last 5 chars
@@ -240,9 +249,13 @@
     //CRUD WRAPPER FUNCTIONS
 
     //CREATE
-    function create_record()
+    function create_record($id=null)
     {
         //Get the form data and validate
+
+        //We reuse create to regen a record if we're updating, in which case we use the same id
+        if ($id == null)
+            { $id = TVRecord::generate_id(); }
 
         $type = $_POST["tv_type"]; //From dropdown, no need to validate the string
 
@@ -264,7 +277,7 @@
         try
         {
             $record = new TVRecord(
-                TVRecord::generate_id(),
+                $id,
                 $type,
                 $brand,
                 $model,
@@ -307,7 +320,9 @@
 
         open_file_context_manager("debug/ihatelife.txt", FILE_MODE_WRITE_APPEND,
             function($file) use ($id) {
-                fwrite($file, "Deleting record with id: $id\n");
+                //current date and time
+                $date = date("Y-m-d H:i:s");
+                fwrite($file, "Deleting record with id: $id - [$date]\n");
             }
         );
 
@@ -352,6 +367,36 @@
     {
         try
             { delete_record($_POST["deleteid"]); }
+
+        //General catchall
+        catch (Exception $e)
+            { generate_error($e -> getMessage()); }
+    }
+
+    //UPDATE
+    //Button to open the update form
+    function add_update_button($id)
+    {
+        echo "<form method='get' action='update.php'>";
+        echo "<input type='hidden' name='id' value='$id'/>";
+        echo "<button type='submit'>Update</button>";
+        echo "</form>";
+    }
+
+    function update_record($id)
+    {
+        //Delete the record
+        delete_record($id);
+
+        //Create a new record with the new data
+        create_record($id);
+    }
+
+
+    if (isset($_POST["updatesubmit"]))
+    {
+        try
+            { update_record($_POST["id"]); }
 
         //General catchall
         catch (Exception $e)

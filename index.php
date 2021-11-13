@@ -61,6 +61,7 @@
                     echo array_values($records)[$i] -> __toString();
                     echo "<td>";
                     add_delete_button(array_values($records)[$i] -> id);
+                    add_update_button(array_values($records)[$i] -> id);
                     echo "</td>";
                     echo "</tr>";
                 }
