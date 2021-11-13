@@ -179,10 +179,11 @@
 
         foreach ($options as $option_name)
         {
-            $rv .= "<option value='$option_name'";
-
+            $rv .= "<option ";
             if ($selected_choice == $option_name)
-                { $rv .= " selected"; }
+                { $rv .= "value='' selected"; }
+            else
+                { $rv .= "value='$option_name'"; }
 
             $rv .= ">$option_name</option>";
         }

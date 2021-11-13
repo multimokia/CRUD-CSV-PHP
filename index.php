@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="description" content="Assignment 3">
-    <meta name="author" content="Michael D'mello">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment 3</title>
-    <link rel="stylesheet" href="css/style.css">
-    <?php include "./functions.inc.php"; ?>
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="Assignment 3">
+        <meta name="author" content="Michael D'mello">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Assignment 3</title>
+        <link rel="stylesheet" href="css/style.css">
+        <?php include "./functions.inc.php"; ?>
+    </head>
     <body>
         <form method="POST">
             <fieldset>
-                <legend>What do?</legend>
+                <legend>Create a record:</legend>
                 <label for="tv_type">TV Type:</label>
-                <?php select("tv_type", ["--", "LCD", "LED", "OLED", "QLED"], null, true); ?>
+                <?php select("tv_type", ["--", "LCD", "LED", "OLED", "QLED"], "--", true); ?>
                 <br><br>
                 <h3>Brand:</h3>
                 <input type="radio" name="brand" id="brandLG" value="LG" required><label for="brandLG">LG</label>
