@@ -10,6 +10,27 @@
         <?php include "./functions.inc.php"; ?>
     </head>
     <body>
+        <?php
+            //Hadle all messages here
+            if (isset($_SESSION["message"]))
+            {
+                [$type, $message] = $_SESSION["message"];
+
+                switch ($type)
+                {
+                    case "warning":
+                        generate_warning($message);
+                        break;
+                    case "error":
+                        generate_error($message);
+                        break;
+                }
+
+                echo $_SESSION["message"];
+                unset($_SESSION["message"]);
+            }
+        ?>
+        <hr>
         <form method="POST">
             <fieldset>
                 <legend>Create a record:</legend>
@@ -41,6 +62,28 @@
             </fieldset>
         </form>
         <hr>
+        <!-- Form to search for a record by id -->
+        <form method="POST">
+            <fieldset>
+                <legend>Search for a record:</legend>
+                <label for="searchid">ID:</label>
+                <input type="text" name="searchid" id="searchid" required/>
+                <input type="submit" name="searchsubmit" value="Search"/>
+            </fieldset>
+        </form>
+        <hr>
+        <!-- Form to filter records by brand -->
+        <form method="POST">
+            <fieldset>
+                <legend>Filter records by brand:</legend>
+                <label for="brand">Brand:</label>
+                <?php select("brand", ["--", "LG", "Samsung", "Sony", "Toshiba"], "--", true); ?>
+                <input type="submit" name="filtersubmit" value="Filter"/>
+            </fieldset>
+        <hr>
+        <!-- Add a way to download the tvs.csv file -->
+        <a href="data/tvs.csv" download="tvs.csv"><button type="button">Download</button></a>
+        <hr>
         <table>
             <tr>
                 <th>#</th>
@@ -67,27 +110,6 @@
                 }
             ?>
         </table>
-        <hr>
-        <?php
-            //Hadle all messages here
-            if (isset($_SESSION["message"]))
-            {
-                [$type, $message] = $_SESSION["message"];
-
-                switch ($type)
-                {
-                    case "warning":
-                        generate_warning($message);
-                        break;
-                    case "error":
-                        generate_error($message);
-                        break;
-                }
-
-                echo $_SESSION["message"];
-                unset($_SESSION["message"]);
-            }
-        ?>
         <hr>
         <script src=https://my.gblearn.com/js/loadscript.js></script>
         <hr>

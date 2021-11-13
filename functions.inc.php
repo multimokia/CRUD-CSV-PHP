@@ -18,6 +18,67 @@
     //Load all records from persistent
     $records = get_all_records();
 
+    //C
+    if (isset($_POST["createsubmit"]))
+    {
+        try
+            { create_record(); }
+
+        //General catchall
+        catch (Exception $e)
+            { generate_error($e -> getMessage()); }
+    }
+
+    //R
+    if (isset($_POST["searchsubmit"]))
+        { $records = [find_single_record($_POST["searchid"])]; }
+
+    //U
+    if (isset($_POST["updatesubmit"]))
+    {
+        try
+            { update_record($_POST["id"]); }
+
+        //General catchall
+        catch (Exception $e)
+            { generate_error($e -> getMessage()); }
+    }
+
+    //D
+    if (isset($_POST["deleterecord"]))
+    {
+        try
+        {
+            delete_record($_POST["deleteid"]);
+            //Redirect to the index page, clear the requests
+            header("Location: index.php");
+        }
+
+        //General catchall
+        catch (Exception $e)
+            { generate_error($e -> getMessage()); }
+    }
+
+    //Confirm deletion function
+    //Echos a form to confirm record deletion w/ a confirm onsubmit event.
+    //If user confirms, send post info to delete the record
+    function add_delete_button($id)
+    {
+        echo "<form method='POST' onsubmit=\"return confirm('Are you sure you want to delete this record?');\">";
+        echo "<input type='hidden' name='deleteid' value='$id'/>";
+        echo "<input type='submit' name='deleterecord' value='Delete'>";
+        echo "</form>";
+    }
+
+    //Echos a form that allows the user to update the record its attached to
+    function add_update_button($id)
+    {
+        echo "<form method='get' action='update.php'>";
+        echo "<input type='hidden' name='id' value='$id'/>";
+        echo "<button type='submit'>Update</button>";
+        echo "</form>";
+    }
+
     //Function that generates a warning we can display to the user
     function generate_warning($message) {
         echo "<div class='warning'>$message</div>";
@@ -220,28 +281,6 @@
         );
     }
 
-    //READ
-    function get_all_records()
-    {
-        return open_file_context_manager(
-            "data/tvs.csv", FILE_MODE_READ,
-            function($file) {
-                $data = array();
-
-                //Dispose the first line
-                fgetcsv($file);
-
-                //Iter over the file and populate the records array
-                if ($file)
-                {
-                    while($entries = fgetcsv($file, 1024))
-                        { $data[$entries[0]] = new TVRecord(...$entries); }
-                }
-                return $data;
-            }
-        );
-    }
-
     //Finds a record by id. Returns the record if found or null if not.
     function find_single_record($id)
     {
@@ -249,8 +288,7 @@
         return $records[$id] ?? null;
     }
 
-    //CRUD WRAPPER FUNCTIONS
-
+    //CRUD WRAPPER FUNCTIONS (Frontend use only)
     //CREATE
     function create_record($id=null)
     {
@@ -304,14 +342,36 @@
         header("Location: index.php");
     }
 
-    if (isset($_POST["createsubmit"]))
-    {
-        try
-            { create_record(); }
+        //READ
+        function get_all_records()
+        {
+            return open_file_context_manager(
+                "data/tvs.csv", FILE_MODE_READ,
+                function($file) {
+                    $data = array();
 
-        //General catchall
-        catch (Exception $e)
-            { generate_error($e -> getMessage()); }
+                    //Dispose the first line
+                    fgetcsv($file);
+
+                    //Iter over the file and populate the records array
+                    if ($file)
+                    {
+                        while($entries = fgetcsv($file, 1024))
+                            { $data[$entries[0]] = new TVRecord(...$entries); }
+                    }
+                    return $data;
+                }
+            );
+        }
+
+    //UPDATE
+    function update_record($id)
+    {
+        //Delete the record
+        delete_record($id);
+
+        //Create a new record with the new data
+        create_record($id);
     }
 
     //DELETE
@@ -344,59 +404,5 @@
                     { fputcsv($file, $dataline->to_array()); }
             }
         );
-    }
-
-    //Confirm deletion function
-    //Echos javascript to confirm record deletion. If user confirms, send post info to delete the record
-    function add_delete_button($id)
-    {
-        echo "<form method='POST' onsubmit=\"return confirm('Are you sure you want to delete this record?');\">";
-        echo "<input type='hidden' name='deleteid' value='$id'/>";
-        echo "<input type='submit' name='deleterecord' value='Delete'>";
-        echo "</form>";
-    }
-
-    if (isset($_POST["deleterecord"]))
-    {
-        try
-        {
-            delete_record($_POST["deleteid"]);
-            //Redirect to the index page, clear the requests
-            header("Location: index.php");
-        }
-
-        //General catchall
-        catch (Exception $e)
-            { generate_error($e -> getMessage()); }
-    }
-
-    //UPDATE
-    //Button to open the update form
-    function add_update_button($id)
-    {
-        echo "<form method='get' action='update.php'>";
-        echo "<input type='hidden' name='id' value='$id'/>";
-        echo "<button type='submit'>Update</button>";
-        echo "</form>";
-    }
-
-    function update_record($id)
-    {
-        //Delete the record
-        delete_record($id);
-
-        //Create a new record with the new data
-        create_record($id);
-    }
-
-
-    if (isset($_POST["updatesubmit"]))
-    {
-        try
-            { update_record($_POST["id"]); }
-
-        //General catchall
-        catch (Exception $e)
-            { generate_error($e -> getMessage()); }
     }
 ?>
