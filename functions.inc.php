@@ -298,9 +298,7 @@
         //Checks passed, create the record in the runtime map
         _create($record);
 
-        $_SESSION["success_message"] = ["success", "Record created successfully."];
-
-        //Redirect to the index page
+        //Redirect to the index page, clearing requests
         header("Location: index.php");
     }
 
@@ -359,7 +357,11 @@
     if (isset($_POST["deleterecord"]))
     {
         try
-            { delete_record($_POST["deleteid"]); }
+        {
+            delete_record($_POST["deleteid"]);
+            //Redirect to the index page, clear the requests
+            header("Location: index.php");
+        }
 
         //General catchall
         catch (Exception $e)

@@ -26,7 +26,7 @@
                 <input type="text" name="model" id="model" required/>
                 <br><br>
                 <label for="size">Size:</label>
-                <input type="number" name="size" id="size" required/>
+                <input type="number" name="size" id="size" pattern="^[0-9]+$" required/>
                 <br><br>
                 <label for="price">Price:</label>
                 <input type="text" name="price" id="price" pattern="^\d+(\.\d+)?$" required/>
