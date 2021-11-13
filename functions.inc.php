@@ -71,7 +71,7 @@
             if (in_array($id, array_keys($records)))
                 { throw new ErrorException("A TV with that specification already exists in the records."); }
 
-            $this -> id = $id; //TVRecord::serialize($type, $brand, $model, $size);
+            $this -> id = $id;
             $this -> type = $type;
             $this -> brand = $brand;
             $this -> model = $model;
@@ -124,18 +124,20 @@
             );
         }
 
-        public static function serialize(string $type, string $brand, string $model, int $size): string
+        public static function generate_id(): string
         {
-            //Serialization approach:
-            //1. ascii total of type, brand, and model
-            $ascii_value = ascii_add($type) + ascii_add($brand) + ascii_add($model);
-            //2. multiply by size
-            $size_multiple = $ascii_value * $size;
-            //3. convert to hex
-            $hex_value = "0x" . dechex($size_multiple);
+            global $records;
 
-            //4. get last 5 chars
-            return substr($hex_value, -5);
+            $hex_value = null;
+            do
+            {
+                //Generate a unique id for this record
+                $hex_value = substr("0x" . dechex(rand(10000, 99999)), -5);
+                echo "Generated hex value: $hex_value<br>";
+            } while (in_array($hex_value, array_keys($records)));
+
+            //Return the last 5 chars
+            return $hex_value;
         }
     }
 
@@ -221,9 +223,7 @@
                 if ($file)
                 {
                     while($entries = fgetcsv($file, 1024))
-                    {
-                        $data[$entries[0]] = new TVRecord(...$entries);
-                    }
+                        { $data[$entries[0]] = new TVRecord(...$entries); }
                 }
                 return $data;
             }
@@ -264,7 +264,7 @@
         try
         {
             $record = new TVRecord(
-                TVRecord::serialize($type, $brand, $model, $size),
+                TVRecord::generate_id(),
                 $type,
                 $brand,
                 $model,
@@ -324,7 +324,7 @@
         //Pop from the runtime map
         unset($records[$id]);
 
-        //Delete the record
+        //Delete the record by rewriting the file
         open_file_context_manager(
             "data/tvs.csv", FILE_MODE_WRITE,
             function($file) use ($records) {
