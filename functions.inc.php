@@ -83,7 +83,7 @@
             echo "<input type='text' name='model' id='model' value='{$this->model}' required/>";
             echo "<br><br>";
             echo "<label for='size'>Size:</label>";
-            echo "<input type='number' name='size' id='size' value='{$this->size}' required/>";
+            echo "<input type='text' name='size' id='size' pattern='^\d+$' value='{$this->size}' required/>";
             echo "<br><br>";
             echo "<label for='price'>Price:</label>";
             echo "<input type='text' name='price' id='price' value='{$this->price}' pattern='^\d+(\.\d+)?$' required/>";
@@ -180,7 +180,9 @@
         foreach ($options as $option_name)
         {
             $rv .= "<option ";
-            if ($selected_choice == $option_name)
+
+            //Special case for a `--` option
+            if ($selected_choice == $option_name && $option_name == "--")
                 { $rv .= "value='' selected"; }
             else
                 { $rv .= "value='$option_name'"; }
