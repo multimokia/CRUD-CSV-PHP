@@ -319,14 +319,6 @@
     {
         global $records;
 
-        open_file_context_manager("debug/ihatelife.txt", FILE_MODE_WRITE_APPEND,
-            function($file) use ($id) {
-                //current date and time
-                $date = date("Y-m-d H:i:s");
-                fwrite($file, "Deleting record with id: $id - [$date]\n");
-            }
-        );
-
         //Get the record
         $record = find_single_record($id);
 
