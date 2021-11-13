@@ -18,9 +18,6 @@
     //Load all records from persistent
     $records = get_all_records();
 
-    //Create a session
-    session_start();
-
     //Function that generates a warning we can display to the user
     function generate_warning($message) {
         echo "<div class='warning'>$message</div>";
@@ -29,11 +26,6 @@
     //Function that generates an error we can display to the user
     function generate_error($message) {
         echo "<div class='error'>$message</div>";
-    }
-
-    //Function that generates a success message we can display to the user
-    function generate_success($message) {
-        echo "<div class='success'>$message</div>";
     }
 
     //Internal function to convert a string to an ascii numeric value
@@ -330,7 +322,7 @@
         }
 
         //Pop from the runtime map
-        unset($records[$record->id]);
+        unset($records[$id]);
 
         //Delete the record
         open_file_context_manager(
@@ -344,14 +336,6 @@
                     { fputcsv($file, $dataline->to_array()); }
             }
         );
-
-        //Delete the record from the runtime map
-        unset($records[$id]);
-
-        $_SESSION["success_message"] = ["success", "Record deleted successfully."];
-
-        //Redirect to the index page
-        header("Location: index.php");
     }
 
     //Confirm deletion function

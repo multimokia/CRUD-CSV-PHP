@@ -75,9 +75,6 @@
 
                 switch ($type)
                 {
-                    case "success":
-                        generate_success($message);
-                        break;
                     case "warning":
                         generate_warning($message);
                         break;
