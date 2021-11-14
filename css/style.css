@@ -2,6 +2,7 @@
 table, tr, td, th {
     border: 1px solid black;
     border-collapse: collapse;
+    padding: 5px;
 }
 
 .red {
@@ -30,6 +31,10 @@ input, select, textarea, button, a {
     border: 0;
     background: rgba(55, 55, 55, 0.5);
     border-radius: 2px;
+}
+
+input:invalid, select:invalid, textarea:invalid, button:invalid, a:invalid {
+    background: rgba(124, 22, 22, 0.5);
 }
 
 input[type="submit"], button {

@@ -69,7 +69,7 @@
         );
 
         //Reload the page w/ new file
-        header("Location: index.php");
+        header("Refresh:0; Location: index.php");
     }
 
     //U
@@ -90,7 +90,7 @@
         {
             delete_record($_POST["deleteid"]);
             //Redirect to the index page, clear the requests
-            header("Location: index.php");
+            header("Refresh:0; Location: index.php");
         }
 
         //General catchall
@@ -105,7 +105,7 @@
     {
         echo "<form method='POST' onsubmit=\"return confirm('Are you sure you want to delete this record?');\">";
         echo "<input type='hidden' name='deleteid' value='$id'/>";
-        echo "<input type='submit' name='deleterecord' value='Delete'>";
+        echo "<input type='submit' name='deleterecord' value='Delete' style='background: rgba(211, 44, 44, 0.5);'>";
         echo "</form>";
     }
 
@@ -114,7 +114,7 @@
     {
         echo "<form method='get' action='update.php'>";
         echo "<input type='hidden' name='id' value='$id'/>";
-        echo "<button type='submit'>Update</button>";
+        echo "<button type='submit' style='background: rgba(234, 159, 53, 0.5);'>Update</button>";
         echo "</form>";
     }
 
@@ -198,7 +198,7 @@
 
         public function __toString()
         {
-            $rv = "<td><a href=info.php?id={$this -> id}>{$this->id}</a></td>";
+            $rv = "<td><a href=info.php?id={$this -> id} style='background: rgba(80, 181, 65, 0.5);'>{$this->id}</a></td>";
             $rv .= "<td>{$this -> type}</td>";
             $rv .= "<td>{$this -> brand}</td>";
             $rv .= "<td>{$this -> model}</td>";
@@ -421,7 +421,7 @@
         _create($record);
 
         //Redirect to the index page, clearing requests
-        header("Location: index.php");
+        header("Refresh:0; Location: index.php");
     }
 
         //READ
