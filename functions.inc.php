@@ -11,6 +11,7 @@
     define("FILE_MODE_WRITE_APPEND", "a");
     define("FILE_MODE_READWRITE_APPEND", "a+");
 
+    define("RECORD_CSV_HEADER", ["Id","Type","Brand","Model","Size","Price","Sale","Desc"]);
     //id : TVRecord
     //This is essentially a runtime map of TVRecord objects.
     $records = array();
@@ -32,6 +33,44 @@
     //R
     if (isset($_POST["searchsubmit"]))
         { $records = [find_single_record($_POST["searchid"])]; }
+
+    elseif (isset($_POST["filtersubmit"]))
+        { $records = filter_by_brand($_POST["brandfilter"]); }
+
+    elseif (isset($_POST["uploadsubmit"]))
+    {
+        debug_log(print_r($_FILES["newrecords"], true));
+
+        if ($_FILES["newrecords"]["error"])
+        {
+            generate_error("Error uploading file ({$_FILES['newrecords']['error']})");
+            return;
+        }
+
+        $is_safe = open_file_context_manager(
+            $_FILES["newrecords"]["tmp_name"], FILE_MODE_READ,
+            function($file)
+            {
+                $cols = fgetcsv($file);
+                return $cols == RECORD_CSV_HEADER;
+            }
+        );
+
+        if (!$is_safe)
+        {
+            generate_error("File has invalid headers. It must have the following: Id,Type,Brand,Model,Size,Price,Sale,Desc");
+            return;
+        }
+
+        //Checks pass, let's accept the file
+        move_uploaded_file(
+            $_FILES["newrecords"]["tmp_name"],
+            "./data/tvs.csv"
+        );
+
+        //Reload the page w/ new file
+        header("Location: index.php");
+    }
 
     //U
     if (isset($_POST["updatesubmit"]))
@@ -228,6 +267,17 @@
         return $result;
     }
 
+    //Debug log to file
+    function debug_log($message)
+    {
+        open_file_context_manager(
+            "debug/ihatelife.txt", FILE_MODE_READWRITE_APPEND,
+            function($file) use ($message) {
+                fwrite($file, $message . "\n");
+            }
+        );
+    }
+
     //Dropdown maker
     function select($name, $options, $selected_choice=null, $required=false)
     {
@@ -286,6 +336,38 @@
     {
         global $records;
         return $records[$id] ?? null;
+    }
+
+    //Helper function to get all the brands in the current records
+    function get_all_brands()
+    {
+        global $records;
+
+        $brands = [];
+
+        foreach ($records as $record)
+        {
+            if (!in_array($record->brand, $brands))
+                { $brands[] = $record->brand; }
+        }
+
+        return $brands;
+    }
+
+    //Helper function to filter records by brand name
+    function filter_by_brand($brand)
+    {
+        global $records;
+
+        $filtered_records = [];
+
+        foreach ($records as $record)
+        {
+            if ($record -> brand == $brand)
+                { $filtered_records[] = $record; }
+        }
+
+        return $filtered_records;
     }
 
     //CRUD WRAPPER FUNCTIONS (Frontend use only)
@@ -397,7 +479,7 @@
             "data/tvs.csv", FILE_MODE_WRITE,
             function($file) use ($records) {
                 //Add columns
-                fputcsv($file, ["Id","Type","Brand","Model","Size","Price","Sale","Desc"]);
+                fputcsv($file, RECORD_CSV_HEADER);
 
                 //Repopulate the file
                 foreach ($records as $dataline)

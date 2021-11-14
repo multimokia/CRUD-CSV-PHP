@@ -37,11 +37,8 @@
                 <label for="tv_type">TV Type:</label>
                 <?php select("tv_type", ["--", "LCD", "LED", "OLED", "QLED"], "--", true); ?>
                 <br><br>
-                <h3>Brand:</h3>
-                <input type="radio" name="brand" id="brandLG" value="LG" required><label for="brandLG">LG</label>
-                <input type="radio" name="brand" id="brandSamsung" value="Samsung"><label for="brandSamsung">Samsung</label>
-                <input type="radio" name="brand" id="brandSony" value="Sony"><label for="brandSony">Sony</label>
-                <input type="radio" name="brand" id="brandToshiba" value="Toshiba"><label for="brandToshiba">Toshiba</label>
+                <label for="brand">Brand:</label>
+                <input type="text" name="brand" id="brand"/>
                 <br><br>
                 <label for="model">Model:</label>
                 <input type="text" name="model" id="model" required/>
@@ -77,12 +74,23 @@
             <fieldset>
                 <legend>Filter records by brand:</legend>
                 <label for="brand">Brand:</label>
-                <?php select("brand", ["--", "LG", "Samsung", "Sony", "Toshiba"], "--", true); ?>
+                <?php select("brandfilter", ["--", ...get_all_brands()], "--", true); ?>
                 <input type="submit" name="filtersubmit" value="Filter"/>
             </fieldset>
+        </form>
         <hr>
         <!-- Add a way to download the tvs.csv file -->
-        <a href="data/tvs.csv" download="tvs.csv"><button type="button">Download</button></a>
+        <a href="data/tvs.csv" download="tvs.csv">Download Records</a>
+        <hr>
+            <!-- Add a way to upload a new records csv file -->
+            <form method="POST" enctype="multipart/form-data">
+                <fieldset>
+                    <legend>Upload a new records csv file:</legend>
+                    <input type="hidden" name="MAX_FILE_SIZE" value="99999999" />
+                    <input type="file" name="newrecords" accept=".csv" required/>
+                    <input type="submit" name="uploadsubmit" value="Upload"/>
+                </fieldset>
+            </form>
         <hr>
         <table>
             <tr>
