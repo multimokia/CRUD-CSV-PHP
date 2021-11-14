@@ -74,7 +74,7 @@
             <fieldset>
                 <legend>Filter records by brand:</legend>
                 <label for="brand">Brand:</label>
-                <?php select("brandfilter", ["--", ...get_all_brands()], "--", true); ?>
+                <?php select("brandfilter", array_merge(["--"], get_all_brands()), "--", true); ?>
                 <input type="submit" name="filtersubmit" value="Filter"/>
             </fieldset>
         </form>
