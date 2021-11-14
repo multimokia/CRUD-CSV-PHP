@@ -243,6 +243,8 @@
             {
                 //Generate a unique id for this record
                 $hex_value = substr("0x" . dechex(rand(10000, 99999)), -5);
+                debug_log("Generated id: $hex_value");
+
             } while (in_array($hex_value, array_keys($records)));
 
             //Return the last 5 chars
@@ -271,9 +273,11 @@
     function debug_log($message)
     {
         open_file_context_manager(
-            "debug/ihatelife.txt", FILE_MODE_READWRITE_APPEND,
+            "debug/log.txt", FILE_MODE_READWRITE_APPEND,
             function($file) use ($message) {
-                fwrite($file, $message . "\n");
+                //Get currdate
+                $date = date("Y-m-d H:i:s");
+                fwrite($file, "[$date]: $message\n");
             }
         );
     }
@@ -396,59 +400,54 @@
         $sale_price = $_POST["saleprice"]; //Same as above
         $description = filter_input(INPUT_POST, "description", FILTER_SANITIZE_STRING);
 
-        //Try to initialize a TVRecord. If we fail then we catch the error and report it
-        try
-        {
-            $record = new TVRecord(
-                $id,
-                $type,
-                $brand,
-                $model,
-                $size,
-                $base_price,
-                $sale_price,
-                $description
-            );
-        }
-
-        catch (ErrorException $e)
-        {
-            generate_error($e -> getMessage());
-            return;
-        }
+        //initialize a TVRecord
+        $record = new TVRecord(
+            $id,
+            $type,
+            $brand,
+            $model,
+            $size,
+            $base_price,
+            $sale_price,
+            $description
+        );
 
         //Checks passed, create the record in the runtime map
         _create($record);
+
+        debug_log("Created record: " . print_r($record, true));
 
         //Redirect to the index page, clearing requests
         header("Refresh:0; Location: index.php");
     }
 
-        //READ
-        function get_all_records()
-        {
-            return open_file_context_manager(
-                "data/tvs.csv", FILE_MODE_READ,
-                function($file) {
-                    $data = array();
+    //READ
+    function get_all_records()
+    {
+        return open_file_context_manager(
+            "data/tvs.csv", FILE_MODE_READ,
+            function($file) {
+                $data = array();
 
-                    //Dispose the first line
-                    fgetcsv($file);
+                //Dispose the first line
+                fgetcsv($file);
 
-                    //Iter over the file and populate the records array
-                    if ($file)
-                    {
-                        while($entries = fgetcsv($file, 1024))
-                            { $data[$entries[0]] = new TVRecord(...$entries); }
-                    }
-                    return $data;
+                //Iter over the file and populate the records array
+                if ($file)
+                {
+                    while($entries = fgetcsv($file, 1024))
+                        { $data[$entries[0]] = new TVRecord(...$entries); }
                 }
-            );
-        }
+                return $data;
+            }
+        );
+    }
 
     //UPDATE
     function update_record($id)
     {
+        debug_log("Updating record: $id");
+
         //Delete the record
         delete_record($id);
 
@@ -461,12 +460,15 @@
     {
         global $records;
 
+        debug_log("Deleting record: $id");
+
         //Get the record
         $record = find_single_record($id);
 
         //If the record doesn't exist, throw an error
         if (!$record)
         {
+            debug_log("Record not found.");
             generate_error("Record not found ({$record->id})");
             return;
         }
