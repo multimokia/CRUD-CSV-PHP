@@ -393,7 +393,7 @@
             return;
         }
 
-        $brand = $_POST["brand"]; //From radio buttons, no need to validate
+        $brand = filter_input(INPUT_POST, "brand", FILTER_SANITIZE_STRING);
         $model = filter_input(INPUT_POST, "model", FILTER_SANITIZE_STRING);
         $size = filter_input(INPUT_POST, "size", FILTER_SANITIZE_NUMBER_INT);
         $base_price = $_POST["price"]; //These are validated by the regex pattern
